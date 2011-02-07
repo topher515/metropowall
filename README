@@ -1,0 +1,42 @@
+
+Driver for custom 'lightwall' and midi track reader.
+
+`walldriver.py` contains code for connecting to a TCP server
+and sending RGB color values.
+
+   # Create a walldriver with a refresh rate of 60 hz
+   wall_driver = Walldriver(host='localhost',port='5005',refresh='60')
+   wall_driver.set_scene(some_playable_scene)
+   wall_driver.start() # Start the wall
+
+`scenes.py` contains code for creating and manipulating 'scenes'
+which are pre-defined sequences of RGB colors.
+
+   # Create a scene template which works with keyframes (repeats every 32 beats)
+   scene_template = KeyframeSceneTemplate(scene_length=32)
+   # Set a keyframe at beat 3, with a color number of 1
+   scene_template.set_wall_frame(at_beat=3,panel_color=1)
+   # Set a keyframe at beat 10, with a color number of 4
+   scene_template.set_wall_frame(at_beat=10,panel_color=4)
+   # Define the tempo and color numbers
+   a_playable_scene = kst.bind({'tempo':116, # BPM
+     'colors':{
+        1:(12,34,56),
+        4:(255,234,204),
+    }})
+   
+
+`trackplayer.py` contains code for creating and reading track data
+which contains scene data and sending that scene data to the
+walldriver; it also provides functionality for reading midi files
+and creating a 'walltrack' from them.
+
+   # Load a miditrack
+   midi_file = open('mytrack.midi','r')
+   track = WallTrack.load(midi_file)
+
+   # Create a trackplayer connected to the walldriver
+   track_player = TrackPlayer(wall_driver) # Wall driver must already be running
+   # Give it a track to play
+   track_player.enqueue_track(track)
+   track_player.start()
