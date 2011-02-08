@@ -44,5 +44,8 @@ def test_keyframescene():
 	# p is now a playable scene
 	wall_driver.set_scene(p)
 	wall_driver.start()
+	return wall_driver,kst
 	
+if __name__ == '__main__':
+	test_keyframescene()
 	

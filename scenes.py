@@ -1,7 +1,7 @@
 import bisect
 from math import floor as flr
 from sortedcollection import SortedCollection
-from operator import itemgetter
+from operator import itemgetter, sub
 
 from walldriver import PANEL_NUM
 
@@ -130,7 +130,7 @@ class KeyframeSceneTemplate(SceneTemplate):
 				
 			self.seconds_in_scene += seconds
 			self.beats_in_scene += self.beats_in_step
-			if self.beats_in_scene > self.scene_template.scene_length:
+			if self.beats_in_scene >= self.scene_template.scene_length: # TODO: Determine if this should be >= or >
 				self.beats_in_scene = self.beats_in_scene % self.scene_template.scene_length
 				self.seconds_in_scene = self.seconds_in_scene % (self.scene_template.scene_length*self.spb())
 			
@@ -141,29 +141,57 @@ class KeyframeSceneTemplate(SceneTemplate):
 			if not self._prev_frame or not self._next_frame or self.beats() != 0:
 				old_prev_frame = self._prev_frame
 				old_next_frame = self._next_frame
+				looped_forwards_to_beginning = False
+				looped_backwards_to_end = False
 				try:
 					self._prev_frame = self.scene_template._keyframes.find_le(self.beats_in_scene)
 				except ValueError:
 					# If we can't find a key less than this beat then this is the beginning
 					# so use the last frame
 					self._prev_frame = self.scene_template._keyframes[-1]
+					looped_backwards_to_end = True
 				try:
 					self._next_frame = self.scene_template._keyframes.find_gt(self.beats_in_scene)
 				except ValueError:
 					# If we can't find a key great than this beat then this is the end so
 					# use the first frame
 					self._next_frame = self.scene_template._keyframes[0]
+					looped_forwards_to_beginning = True
 					
 				# If the keyframes have changed, recalculate rgb values
-				if old_prev_frame != self._prev_frame and old_next_frame == self._next_frame: 
+				if old_prev_frame != self._prev_frame or old_next_frame != self._next_frame: 
 					
-					self._prev_at = self._prev_frame[0]*self.spb()
-					self._next_at = self._next_frame[0]*self.spb()
+					if looped_backwards_to_end:
+						# If we have to loop around to the end to get the 'previous' keyframe
+						# then do calculations with that in mind
+						from_end = self.scene_template.scene_length*self.spb()-self._prev_frame[0]*self.spb()
+						self._prev_at = -(from_end)
+					else:
+						# Otherwise the previous time of the keyframe is whatever beat that keyframe is on times secs/beat
+						self._prev_at = self._prev_frame[0]*self.spb()
+					
+					
+					if looped_forwards_to_beginning:
+						from_begin = self._next_frame[0]*self.spb()
+						self._next_at = self.scene_template.scene_length*self.spb() + from_begin
+						
+					else:
+						self._next_at = self._next_frame[0]*self.spb()
+						
+					
+					
 					assert(self._prev_at < self.seconds_in_scene)
 					assert(self._next_at > self.seconds_in_scene)
 				
 					self._prev_rgb = [self.colors[x] for x in self._prev_frame[1].panel_colors]
 					self._next_rgb = [self.colors[x] for x in self._next_frame[1].panel_colors]
+					
+					#print 'Using new keyframe'
+					#print self._prev_rgb
+					#print self._next_rgb
+				else:
+					pass
+					#print 'Using same keyframe'
 					
 			# If the next keyframe is a 'switch to' frame
 			if isinstance(self._next_frame[1],KeyframeSceneTemplate.SwitchToFrame):
@@ -174,14 +202,16 @@ class KeyframeSceneTemplate(SceneTemplate):
 				
 				#      seconds after the last keyframe  OVER  total seconds between keyframe
 				progress = (self.seconds_in_scene - self._prev_at) / (self._next_at - self._prev_at)
-				assert(0 < progress < 1)
+				#print "We are %s%% through this area between keyframes at %s and %s" % ((progress*100),self._prev_at,self._next_at)
+				assert (0 < progress < 1)
 				
 				now_rgb = []
 				
 				# Look at each panel
 				for i in xrange(PANEL_NUM):
 					now_rgb.append( \
-						((self._next_rgb[i] - self._prev_rgb[i])*progress) + self._prev_rgb \
+						map(lambda a,b: int((b-a)*progress+a), self._prev_rgb[i],self._next_rgb[i]), 
+						# (self._next_rgb[i] - self._prev_rgb[i])*progress) + self._prev_rgb[i] \
 					)
 					
 				return now_rgb 

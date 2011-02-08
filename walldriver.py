@@ -174,8 +174,9 @@ class WallDriver(threading.Thread):
 			self._scene_lock.acquire()
 			if self._cur_playing_scene.step(0 if not last_time else cur_time - last_time):
 				wall_data = self._cur_playing_scene.rgb()
+				# print wall_data
 				self.beats += self._cur_playing_scene.beats()
-				print 'Scene: On beat %s' % self.beats
+				# print 'Scene: On beat %s' % self.beats
 			else:
 				pass # No change so we won't send scene data
 			self._scene_lock.release()
