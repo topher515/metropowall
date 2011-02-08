@@ -193,7 +193,14 @@ class WallDriver(threading.Thread):
 	def send(self,data):
 		try:
 			self._reconnect()
-			self.sock.send(','.join(['%s' % (datum) for datum in data]))
+		
+
+			l = []
+			for i,rgb in enumerate(data):
+				for j,color in enumerate(rgb,1):
+					l.append('%s %s' % (i*3+j,color))
+			self.sock.send('\n'.join(l))
+
 			self._disconnect()
 		except socket.error, e:
 			if isinstance(e.args, tuple):
