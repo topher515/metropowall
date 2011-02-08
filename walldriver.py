@@ -193,7 +193,7 @@ class WallDriver(threading.Thread):
 	def send(self,data):
 		try:
 			self._reconnect()
-			self.sock.send('\n'.join(['Panel %s: %s' % (i,datum) for i,datum in enumerate(data)]))
+			self.sock.send(','.join(['%s' % (datum) for datum in data]))
 			self._disconnect()
 		except socket.error, e:
 			if isinstance(e.args, tuple):

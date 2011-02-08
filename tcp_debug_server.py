@@ -13,8 +13,8 @@ class WallRGBHandler(SocketServer.BaseRequestHandler):
 			data += buff
 			buff = self.request.recv(4096).strip()
 		
-		print "Got %s bytes of data from %s at %s" % (len(data),self.client_address[0], time.time())
-		#print 'len(data)
+		#print "Got %s bytes of data from %s at %s" % (len(data),self.client_address[0], time.time())
+		print data
 		self.request.send('ok!')
 		# socket.sendto(data.upper(), self.client_address)
 		
