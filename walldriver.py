@@ -138,6 +138,7 @@ class WallDriver(threading.Thread):
 	
 	def _reconnect(self):	
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sock.settimeout(.2)
 		self.sock.connect((self.host, self.port))
 		self.sock.setblocking(0)
 		
@@ -176,8 +177,8 @@ class WallDriver(threading.Thread):
 				wall_data = self._cur_playing_scene.rgb()
 				# print wall_data
 				self.beats += self._cur_playing_scene.beats()
-				# print 'Scene: On beat %s' % self.beats
 			else:
+				print 'skip...',
 				pass # No change so we won't send scene data
 			self._scene_lock.release()
 			last_time = cur_time
@@ -199,7 +200,10 @@ class WallDriver(threading.Thread):
 			for i,rgb in enumerate(data):
 				for j,color in enumerate(rgb,1):
 					l.append('%s %s' % (i*3+j,color))
+					
+			#print 'sending...',
 			self.sock.send('\n'.join(l))
+			#print ' sent.'
 
 			self._disconnect()
 		except socket.error, e:
