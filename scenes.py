@@ -2,6 +2,7 @@ import bisect
 from math import floor as flr
 from sortedcollection import SortedCollection
 from operator import itemgetter, sub
+import random
 
 from walldriver import PANEL_NUM
 
