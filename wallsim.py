@@ -40,9 +40,9 @@ class WallSimulator(object):
 		def __init__(self,canvas,rect,panel_num):
 			self.canvas = canvas
 			self.rect = rect
-			self.r = WallSimulator.Channel(self,panel_num*3+1)
-			self.g = WallSimulator.Channel(self,panel_num*3+2)
-			self.b = WallSimulator.Channel(self,panel_num*3+3)
+			self.r = WallSimulator.Channel(self,(panel_num-1)*3+1)
+			self.g = WallSimulator.Channel(self,(panel_num-1)*3+2)
+			self.b = WallSimulator.Channel(self,(panel_num-1)*3+3)
 			
 		def _update(self,foo):
 			self.canvas.itemconfig(self.rect,fill='#%0.2X%0.2X%0.2X' % (self.r.value,self.g.value,self.b.value))

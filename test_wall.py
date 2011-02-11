@@ -16,7 +16,7 @@ def test_trackplayer():
 	
 def test_keyframescene():
 	
-	wall_driver = WallDriver(refresh=30,port=7778)
+	wall_driver = WallDriver(refresh=10,port=7778)
 	print "Started wall driver for %s panel wall at %s:%s" % \
 		(wall_driver.panel_num, wall_driver.host, wall_driver.port)
 	
@@ -28,6 +28,8 @@ def test_keyframescene():
 	# Set all panels to color 1 at beat 10, except for panel 6 set to color 2
 	x = [1]*36
 	x[6] = 2
+	x[0] = 2
+	x[1] = 2
 	kst.set_frame(10,x)
 	
 	# set all panels to color 2 at beat 20

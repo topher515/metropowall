@@ -1,6 +1,7 @@
 from scenes import PlayableScene
 import random
-from walldriver import PANEL_NUM, WallDriver, KeyboardHandler, WALL_HEIGHT, WALL_WIDTH
+from walldriver import PANEL_NUM, WallDriver, KeyboardHandler, WALL_HEIGHT, WALL_TOP_WIDTH
+
 
 W = WALL_TOP_WIDTH
 H = WALL_HEIGHT
@@ -151,7 +152,7 @@ def wall_test():
 	
 	"""
 	
-	wd = WallDriver(refresh=30,host='localhost',port=7778)
+	wd = WallDriver(refresh=10,host='localhost',port=7778)
 	
 	k = KeyboardHandler()
 	

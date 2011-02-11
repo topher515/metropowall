@@ -6,6 +6,7 @@ import time
 import random
 import errno
 import termios, fcntl, sys, os, time
+from collections import defaultdict
 
 DEFAULT_TCP_IP = '127.0.0.1'
 DEFAULT_TCP_PORT = 5005
@@ -203,8 +204,8 @@ class WallDriver(threading.Thread):
 
 			l = []
 			for i,rgb in enumerate(data):
-				for j,color in enumerate(rgb,1):
-					l.append('%s %s' % (i*3+j,color))
+				for j,val in enumerate(rgb,1):
+					l.append('%s %s' % (i*3+j,val))
 					
 			#print 'sending...',
 			self.sock.send('\n'.join(l))
