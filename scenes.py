@@ -76,7 +76,7 @@ class PlayableScene(object):
 	def beats(self):
 		return self.beats_in_step
 		
-	def rgb(self,base_rgb=None): pass
+	def rgb(self,base_rgb=None):
 	
 		
 	
