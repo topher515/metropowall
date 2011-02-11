@@ -143,7 +143,7 @@ class WallDriver(threading.Thread):
 	
 	def _reconnect(self):	
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.sock.settimeout(.2)
+		#self.sock.settimeout(.5)
 		self.sock.connect((self.host, self.port))
 		self.sock.setblocking(0)
 		
