@@ -31,6 +31,19 @@ class PlayableScene(object):
 		self.beats_in_step = 0
 		#self.beats_in_scene = 0
 		
+	@staticmethod
+	def blend_rgbs(*args):
+		blended = []
+		for i in xrange(0,3):
+			blended.append(sum([rgb[i] for rgb in args])/len(args))
+		return tuple(blended)
+	
+	@staticmethod
+	def blend_rgb_lists(rgbs1,rgbs2):
+		return [self.blend_rgbs(rgbs1[i],rgbs2[i]) for i in xrange(0,min(len(rgbs1),len(rgbs2)))]
+	
+	
+	
 	
 	def bpm(self): return self.tempo # Beats per minute
 	def bps(self): return float(self.tempo)/60.0 # Beats per second
@@ -63,7 +76,17 @@ class PlayableScene(object):
 	def beats(self):
 		return self.beats_in_step
 		
-	def rgb(self): pass
+	def rgb(self,base_rgb=None): pass
+	
+		
+	
+		if base_rgb:
+			# Hack to fix switched panels
+			x = base_rgb[14]
+			base_rgb[14] = base_rgb[15]
+			base_rgb[15] = x
+
+			return base_rgb
 	
 
 class RandomFlashing(PlayableScene):		
