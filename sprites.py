@@ -3,6 +3,10 @@ from collections import defaultdict
 from walldriver import WALL_HEIGHT, WALL_TOP_WIDTH, WALL_BOTTOM_WIDTH, PANEL_NUM
 import random
 
+
+
+
+
 class SpritePlane(PlayableScene):
 	
 	def __init__(self,*args,**kwargs):
@@ -109,7 +113,16 @@ class SpritePlane(PlayableScene):
 	
 	
 	def step(self,seconds):
-		return super(SpritePlane,self).step(seconds)
+		
+		if not super(SpritePlane,self).step(seconds):
+			return False
+		
+		if self.beats_in_step > 0:
+			for sprite in self.loc_by_sprite.keys():
+				if sprite.vector != (0,0):
+					self.move(sprite,*sprite.vector)
+		
+		return True
 
 	
 	
@@ -129,13 +142,13 @@ class SpritePlane(PlayableScene):
 				if not top_sprite or top_sprite.z < s.z:
 					top_sprite = s
 				if s.blend:
-					to_blend.append(x)
+					to_blend.append(s)
 			
 			if top_sprite:
 				# If the top sprite is a blendable one,
 				# then use the blended color
 				if top_sprite.blend:
-					rgb_now.append(self.blend_rgbs([x.rgb() for x in to_blend]))
+					rgb_now.append(self.blend_rgbs(*[x.rgb() for x in to_blend]))
 				# If the top sprite is not blendable then just
 				# use its color
 				else:
@@ -149,10 +162,11 @@ class SpritePlane(PlayableScene):
 		
 		return super(SpritePlane,self).rgb(rgb_now)
 	
-	
+
+
 class Sprite(object):
 	
-	def __init__(self,color,blend = True, z=0, trail=0):
+	def __init__(self,color,blend = True, z=0, trail=0, vector=(0,0)):
 		if type(color) == type(self.__init__):
 			self.color_fn = color
 			self.color = None
@@ -163,6 +177,7 @@ class Sprite(object):
 		self.blend = blend
 		self.z = z
 		self.trail = trail
+		self.vector=vector
 	
 	def loc(self):
 		if not self._plane:

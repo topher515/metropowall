@@ -81,7 +81,7 @@ class SnakeScene(SpritePlane):
 		if self.points < 4:
 			return super(SnakeScene,self).rgb()
 		else:
-			return [(rint(0,256),rint(0,256),rint(0,256)) for i in xrange(0,PANEL_NUM)]
+			return [(rint(0,255),rint(0,255),rint(0,255)) for i in xrange(0,PANEL_NUM)]
 		
 		
 def wall_test():
