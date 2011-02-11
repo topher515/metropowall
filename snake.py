@@ -152,7 +152,7 @@ def wall_test():
 	
 	"""
 	
-	wd = WallDriver(refresh=10,host='localhost',port=7778)
+	wd = WallDriver(refresh=30,host='localhost',port=7778)
 	
 	k = KeyboardHandler()
 	

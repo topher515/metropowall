@@ -3,19 +3,19 @@ import SocketServer
 import threading
 from walldriver import PANEL_NUM
 
+import time
 
-#w.create_line(0, 0, 200, 100)
-#w.create_line(0, 100, 200, 0, fill="red", dash=(4, 4))
-#w.create_rectangle(50, 25, 150, 75, fill="blue")
 
+
+MAX_REFRESH_RATE = 15
 
 		
 
 WALL_LAYOUT = (
 (None,1,5,9, 13,17,21,25,29,None),
 (None,2,6,10,14,18,22,26,30,None),
-(33,  3,7,11,15,19,23,27,31,35),
-(34,  4,8,12,16,20,24,28,32,36)
+(33,  3,7,11,16,19,23,27,31,35),
+(34,  4,8,12,15,20,24,28,32,36)
 )
 
 
@@ -29,8 +29,9 @@ class WallSimulator(object):
 			self.channel_num = channel_num
 		
 		def _set_val(self,val):
-			self._value =val
-			self.panel.canvas.master.event_generate('<<Channel-Update-%s>>' % self.channel_num)
+			if self._value != val:
+				self._value =val
+				self.panel.canvas.master.event_generate('<<Channel-Update-%s>>' % self.channel_num)
 		def _get_val(self):
 			return self._value
 		value = property(fget=_get_val,fset=_set_val)
@@ -119,12 +120,18 @@ class WallSimulator(object):
 	
 	class WallTCPServer(SocketServer.TCPServer):
 		def __init__(self,*args,**kwargs):
+			self.wait_time = 1/float(MAX_REFRESH_RATE)
 			self.wall = kwargs.pop('wall')
+			self.last_time = time.time()
 			SocketServer.TCPServer.__init__(self,*args,**kwargs)
 
 
 	class WallTCPHandler(SocketServer.StreamRequestHandler):
 		def handle(self):
+			if time.time() - self.server.last_time < self.server.wait_time:
+				return
+			self.server.last_time = time.time()
+			
 			lines = self.rfile.readlines()
 			for ch,val in [line.strip().split(' ') for line in lines]:
 				self.server.wall.channels[int(ch)].value = int(val)

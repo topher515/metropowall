@@ -17,7 +17,6 @@ class SpritePlane(PlayableScene):
 		
 		super(SpritePlane,self).__init__(*args,**kwargs)
 		
-		self.trails_by_wall1d = {}
 		
 	def add_sprite(self,x,y,sprite):
 		
@@ -33,8 +32,10 @@ class SpritePlane(PlayableScene):
 				if not 0 <= wx < WALL_TOP_WIDTH:
 					wx = wx % WALL_TOP_WIDTH
 			else:
-				if not -1 <= wx < WALL_BOTTOM_WIDTH-1:
-					wx = (wx % WALL_BOTTOM_WIDTH) - 1
+				if wx < -1:
+					wx = (wx % WALL_BOTTOM_WIDTH)
+				elif wx > WALL_BOTTOM_WIDTH-1:
+					wx = (wx % WALL_BOTTOM_WIDTH) -1
 				
 			x,y = wx,wy		
 		
@@ -48,7 +49,7 @@ class SpritePlane(PlayableScene):
 	
 	def remove_sprite(self,sprite):
 		loc = self.loc_by_sprite[sprite] # Get sprite loc
-		self.trails_by_wall1d[loc] # Add trail
+		# self.trails_by_wall1d[loc] # Add trail
 		del self.loc_by_sprite[sprite] # Remove loc from dict
 		self.sprites_by_loc[loc].remove(sprite) # Remove this sprite from loc list
 	
@@ -60,15 +61,15 @@ class SpritePlane(PlayableScene):
 	def move_to(self,sprite,x,y):
 		cx,cy = self.loc_by_sprite[sprite]
 		self.remove_sprite(sprite)
-		self.add_sprite(sprite,x,y)
+		self.add_sprite(x,y,sprite)
 		
 	def move(self,sprite,x,y):
 		cx,cy = self.loc_by_sprite[sprite]
-		self.move_to(sprite,cx+x,cx+y)
+		self.move_to(sprite,cx+x,cy+y)
 		
-	def move_up(self,sprite): self.move(sprite,0,1)	
+	def move_up(self,sprite): self.move(sprite,0,-1)	
 	def move_right(self,sprite): self.move(sprite,1,0)
-	def move_down(self,sprite): self.move(sprite,0,-1)	
+	def move_down(self,sprite): self.move(sprite,0,1)	
 	def move_left(self,sprite): self.move(sprite,-1,0)
 	
 	def random_visible_plane2d(self):
@@ -86,19 +87,19 @@ class SpritePlane(PlayableScene):
 		return (i/WALL_HEIGHT,i%WALL_HEIGHT)
 	
 	def wall1d_to_plane2d(self,i):
-		return self.wall2d_to_plane2d(wall1d_to_wall2d(i))
+		return self.wall2d_to_plane2d(*self.wall1d_to_wall2d(i))
 		
 		
 	def wall2d_to_plane2d(self,x,y):
-		return x+self.tile_0_in_plane2d[0],y+self.tile_0_in_plane2d
+		return x+self.tile_0_in_plane2d[0],y+self.tile_0_in_plane2d[1]
 	
 	def plane2d_to_wall2d(self,x,y):
-		return x-self.tile_0_in_plane2d[0],y-self.tile_0_in_plane2d
+		return x-self.tile_0_in_plane2d[0],y-self.tile_0_in_plane2d[1]
 	
 	def wall2d_to_wall1d(self,x,y):
-		if x,y == (-1,2):
+		if (x,y) == (-1,2):
 			return 32
-		elif x,y == (-1,3):
+		elif (x,y) == (-1,3):
 			return 33
 		
 		return x*WALL_HEIGHT+y
@@ -108,10 +109,8 @@ class SpritePlane(PlayableScene):
 	
 	
 	def step(self,seconds):
-		
-		super(SpritePlane,self).step(seconds)
-	
-		if 
+		return super(SpritePlane,self).step(seconds)
+
 	
 	
 	def rgb(self,base_rgb=None):
@@ -120,7 +119,7 @@ class SpritePlane(PlayableScene):
 		for i in xrange(PANEL_NUM):
 			
 			_2d = self.wall1d_to_plane2d(i)
-			sprites = self.sprites_by_loc(_2d)
+			sprites = self.sprites_by_loc[_2d]
 			
 			to_blend = []
 			top_sprite = None
@@ -131,14 +130,18 @@ class SpritePlane(PlayableScene):
 					top_sprite = s
 				if s.blend:
 					to_blend.append(x)
-			# If the top sprite is a blendable one,
-			# then use the blended color
-			if top_sprite.blend:
-				rgb_now.append(self.blend_rgbs([x.rgb() for x in to_blend]))
-			# If the top sprite is not blendable then just
-			# use its color
+			
+			if top_sprite:
+				# If the top sprite is a blendable one,
+				# then use the blended color
+				if top_sprite.blend:
+					rgb_now.append(self.blend_rgbs([x.rgb() for x in to_blend]))
+				# If the top sprite is not blendable then just
+				# use its color
+				else:
+					rgb_now.append(top_sprite.rgb())
 			else:
-				rgb_now.append(top_sprite.rgb())
+				rgb_now.append(self.bg)
 				
 		# If we got a
 		if base_rgb:
