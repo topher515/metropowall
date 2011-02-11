@@ -1,83 +1,14 @@
 from scenes import PlayableScene
 import random
-from walldriver import PANEL_NUM, WallDriver
+from walldriver import PANEL_NUM, WallDriver, KeyboardHandler, WALL_HEIGHT, WALL_WIDTH
+
+W = WALL_TOP_WIDTH
+H = WALL_HEIGHT
 
 from collections import defaultdict
-import threading
-import termios, fcntl, sys, os, time
-
-W = 8
-H = 4
 
 
 
-class KeyboardHandler(threading.Thread):
-
-	UP = '\x1b[A'
-	DOWN = '\x1b[B'
-	RIGHT = '\x1b[C'
-	LEFT = '\x1b[D'
-
-	def __init__(self):
-		self._stop = threading.Event()
-		
-		self.registered_fns = defaultdict(list)
-		
-		threading.Thread.__init__(self)
-		
-	def stop(self): self._stop.set()
-	
-	def stopped(self): return self._stop.isSet()
-	
-	def register_keypress(self,key,fn):
-		self.registered_fns[key].append(fn)
-		#print "Registered key %s to %s" % (key,fn)
-		
-	def register_arrows(self,up_fn,right_fn,down_fn,left_fn):
-		self.register_keypress(self.UP,up_fn)
-		self.register_keypress(self.RIGHT,right_fn)
-		self.register_keypress(self.DOWN,down_fn)
-		self.register_keypress(self.LEFT,left_fn)
-	
-	def run(self):
-		fd = sys.stdin.fileno()
-
-		oldterm = termios.tcgetattr(fd)
-		newattr = termios.tcgetattr(fd)
-		newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
-		termios.tcsetattr(fd, termios.TCSANOW, newattr)
-
-		oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
-		fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
-
-		try:
-			while not self.stopped():
-				try:
-					c = sys.stdin.read(16)
-					
-						
-					for fn in self.registered_fns[c]:
-						fn()
-						# print "Called registered func %s for %s" % (fn,repr(c))
-					#print 'Got char %s' % c
-					
-					
-					
-					if c == 'q':
-						self.stop()
-					
-				except IOError: pass
-				
-				#time.sleep(.1)
-		finally:
-			termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
-			fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
-			print 'Keyboard handler stopped.'
-
-def keypresstest():
-	k =KeyboardHandler()
-	k.start()
-	return k
 
 class Snake(PlayableScene):
 	
@@ -173,7 +104,7 @@ class Snake(PlayableScene):
 		return True
 	
 	
-	def rgb(self):
+	def rgb(self,):
 		
 		rgb_now = []
 		
@@ -207,7 +138,7 @@ class Snake(PlayableScene):
 		rgb_now[14] = rgb_now[15]
 		rgb_now[15] = x
 	
-		return rgb_now	
+		return super(Snake,self).rgb(rgb_now)	
 		
 def wall_test():
 	
